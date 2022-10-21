@@ -1,6 +1,10 @@
+from abc import ABC
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.validators import UniqueValidator
@@ -18,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 # Overwrite AuthTokenSerializer: use email in username field, make username non-required
-class LoginSerialiser(AuthTokenSerializer):
+class LoginSerializer(AuthTokenSerializer):
     username = serializers.CharField(
         label="Username",
         write_only=True,
@@ -89,3 +93,42 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class EmailSerializer(serializers.Serializer):
+    """
+    Reset Password Email Request Serializer.
+    """
+
+    email = serializers.EmailField()
+
+    class Meta:
+        fields = ("email",)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        write_only=True,
+        min_length=1,
+    )
+
+    class Meta:
+        field = ("password",)
+
+    # Verify token and encoded_pk and then set new password.
+    def validate(self, data):
+        password = data.get("password")
+        token = self.context.get("kwargs").get("token")
+        encoded_pk = self.context.get("kwargs").get("encoded_pk")
+
+        if token is None or encoded_pk is None:
+            raise serializers.ValidationError("Data is missing.")
+
+        pk = urlsafe_base64_decode(encoded_pk).decode()
+        user = User.objects.get(pk=pk)
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            raise serializers.ValidationError("The reset token is invalid")
+
+        user.set_password(password)
+        user.save()
+        return data
