@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -141,4 +141,16 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+# user token expiration time
 TOKEN_EXPIRATION_MINUTES = 10
+PASSWORD_RESET_TIMEOUT = 15 * 60  # time in seconds
+
+FRONT_END_URL = "http://localhost:8080"
+
+# SMTP email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = ''  # IMPORTANT: write your email
+EMAIL_HOST_PASSWORD = ''  # IMPORTANT: write generated password for smtp
+EMAIL_PORT = 587
