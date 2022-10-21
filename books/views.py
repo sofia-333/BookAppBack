@@ -28,6 +28,7 @@ class GetBookAPIView(APIView):
             raise ValidationError({"isbn": "Wrong ISBN number provided."})
         book = Book.objects.filter(Q(isbn_10=isbn) | Q(isbn_13=isbn)).first()
         if book:
+            print("Got book from database")
             serializer = BookSerializer(book)
             return Response(serializer.data)
 
