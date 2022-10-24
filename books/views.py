@@ -2,14 +2,12 @@ import re
 
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from books.api import get_book_data
 from books.models import Book
 from books.serializers import BookSerializer
-from users.authentication import ExpiringTokenAuthentication
 
 
 def is_valid_isbn(isbn):
@@ -20,8 +18,8 @@ def is_valid_isbn(isbn):
 
 
 class GetBookAPIView(APIView):
-    authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    authentication_classes = ()
+    permission_classes = ()
 
     def get(self, request, isbn):
         if not is_valid_isbn(isbn):
